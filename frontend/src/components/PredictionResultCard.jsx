@@ -148,8 +148,25 @@ function buildReportText({ report, diseaseKey, confidence, lang }) {
   ].join('\n')
 }
 
+function linesToText(lines) {
+  if (!Array.isArray(lines) || lines.length === 0) return '  - Not available.'
+  return lines.map((l) => `  - ${l}`).join('\n')
+}
+
 function downloadText(filename, text) {
   const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
+
+function downloadHTML(filename, html) {
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

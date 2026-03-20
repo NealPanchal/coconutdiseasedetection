@@ -1,7 +1,9 @@
+import asyncio
 import io
 import os
 import re
 import sys
+from contextlib import asynccontextmanager
 from functools import lru_cache
 from typing import Optional
 
@@ -12,7 +14,20 @@ from PIL import Image
 from pydantic import BaseModel
 from torchvision import models, transforms
 
-app = FastAPI(title="Coconut Leaf Disease Detection")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Pre-load and warm up the model at startup so the first prediction
+    request is just as fast as subsequent ones."""
+    print("[startup] Loading model weights…", flush=True)
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, _get_model_and_classes)
+    print("[startup] Model ready ✓", flush=True)
+    yield
+    # (nothing to clean up)
+
+
+app = FastAPI(title="Coconut Leaf Disease Detection", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -612,11 +627,21 @@ def health():
     }
 
 
+@app.get("/warmup")
+async def warmup():
+    """Can be hit by uptime monitors to keep the server warm."""
+    _get_model_and_classes()  # no-op after first load (lru_cache)
+    return {"status": "warm"}
+
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...), lang: str = Form("en")):
     content = await file.read()
     img = Image.open(io.BytesIO(content)).convert("RGB")
-    return predict_pil_image(img, lang=lang)
+    # Run CPU-bound inference in a thread pool so the event loop stays free
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, predict_pil_image, img, lang)
+    return result
 
 
 # ===== CHAT ENDPOINT =====

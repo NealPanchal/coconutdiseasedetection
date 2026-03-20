@@ -54,12 +54,23 @@ function getPredictErrorMessage(status, body) {
   return `Request failed (${status})`
 }
 
+// Converts a File/Blob to a data-URL string (for the HTML report download)
+function fileToDataURL(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = () => resolve(null)
+    reader.readAsDataURL(file)
+  })
+}
+
 export default function UploadCard({ onPredicted }) {
   const { lang } = useLanguage()
   const [dragActive, setDragActive] = useState(false)
   const [file, setFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingStage, setLoadingStage] = useState('') // 'uploading' | 'analysing' | 'done'
   const [error, setError] = useState('')
   const [cameraFacingMode, setCameraFacingMode] = useState('environment')
   const [showCameraModal, setShowCameraModal] = useState(false)
@@ -170,6 +181,7 @@ export default function UploadCard({ onPredicted }) {
   async function runPrediction(selectedFile) {
     setError('')
     setLoading(true)
+    setLoadingStage('uploading')
     try {
       // Resize large images before sending for faster, more reliable prediction
       const optimised = await resizeImageFile(selectedFile)
@@ -177,6 +189,7 @@ export default function UploadCard({ onPredicted }) {
       form.append('file', optimised)
       form.append('lang', lang)
 
+      setLoadingStage('analysing')
       const res = await fetch(`${API_BASE}/predict`, {
         method: 'POST',
         body: form
@@ -187,12 +200,16 @@ export default function UploadCard({ onPredicted }) {
         throw new Error(getPredictErrorMessage(res.status, text))
       }
 
+      setLoadingStage('done')
       const json = await res.json()
-      onPredicted?.(json)
+      // Generate base64 client-side for use in report downloads (no round-trip needed)
+      const imageBase64 = await fileToDataURL(optimised)
+      onPredicted?.({ ...json, image_base64: imageBase64 })
     } catch (e) {
       setError(e?.message || 'Prediction failed')
     } finally {
       setLoading(false)
+      setLoadingStage('')
     }
   }
 
@@ -316,7 +333,21 @@ export default function UploadCard({ onPredicted }) {
         onDrop={onDrop}
       >
         {previewUrl ? (
-          <img className="previewImg" src={previewUrl} alt="Leaf preview" />
+          <div style={{ position: 'relative', display: 'inline-block', width: '100%' }}>
+            <img className="previewImg" src={previewUrl} alt="Leaf preview" style={{ display: 'block', width: '100%', opacity: loading ? 0.55 : 1, transition: 'opacity 0.3s' }} />
+            {loading && (
+              <div style={{
+                position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 10,
+                background: 'rgba(0,0,0,0.35)', borderRadius: 10
+              }}>
+                <LoadingSpinner />
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: 14, letterSpacing: '0.02em' }}>
+                  {loadingStage === 'uploading' ? 'Uploading image…' : 'Analysing leaf…'}
+                </span>
+              </div>
+            )}
+          </div>
         ) : (
           <div style={{ padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 900 }}>
@@ -350,7 +381,13 @@ export default function UploadCard({ onPredicted }) {
       <div className="btnRow">
         <button className={`btn btnPrimary`} type="button" onClick={predictNow} disabled={!file || loading}>
           {loading ? <LoadingSpinner /> : <RefreshCw size={16} />}
-          {loading ? t(lang, 'predict') : t(lang, 'predict')}
+          {loading
+            ? loadingStage === 'uploading'
+              ? 'Uploading…'
+              : loadingStage === 'analysing'
+              ? 'Analysing…'
+              : 'Preparing…'
+            : t(lang, 'predict')}
         </button>
         <button className="btn" type="button" onClick={clearAll} disabled={loading && !file}>
           <Trash2 size={18} />
