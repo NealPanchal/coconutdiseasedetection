@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Send, Mic, MicOff, Volume2, VolumeX, X, MessageCircle, ChevronDown } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext.jsx'
 import { t } from '../i18n.js'
+import API_BASE from '../apiConfig.js'
 
 const LANG_TO_LOCALE = {
   en: 'en-US', hi: 'hi-IN', mr: 'mr-IN', ta: 'ta-IN', te: 'te-IN',
@@ -74,7 +75,7 @@ export default function ChatbotWidget() {
     setMessages((prev) => [...prev, userMsg])
     setLoading(true)
     try {
-      const res = await fetch('/chat', {
+      const res = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: trimmed, language: lang }),

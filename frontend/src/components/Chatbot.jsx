@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Send, Mic, MicOff, Volume2, VolumeX, MessageCircle } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext.jsx'
 import { LANGUAGES, t } from '../i18n.js'
+import API_BASE from '../apiConfig.js'
 
 // Language code → SpeechRecognition locale
 const LANG_TO_LOCALE = {
@@ -18,8 +19,6 @@ const LANG_TO_LOCALE = {
   ur: 'ur-PK',
   or: 'or-IN',
 }
-
-const API_BASE = 'http://localhost:8000'
 
 // Simple markdown-like renderer for bot messages (**bold**, newlines, bullets)
 function BotText({ text }) {

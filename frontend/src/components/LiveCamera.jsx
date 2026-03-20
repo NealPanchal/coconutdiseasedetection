@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { X, RefreshCw, Camera } from 'lucide-react'
 import { t } from '../i18n.js'
 import { useLanguage } from '../context/LanguageContext.jsx'
+import API_BASE from '../apiConfig.js'
 
 export default function LiveCamera({ onClose, onCapture, mode = 'live' }) { // mode: 'live' | 'capture'
   const { lang } = useLanguage()
@@ -88,7 +89,7 @@ export default function LiveCamera({ onClose, onCapture, mode = 'live' }) { // m
         formData.append('lang', lang)
 
         try {
-          const res = await fetch('/predict', {
+          const res = await fetch(`${API_BASE}/predict`, {
             method: 'POST',
             body: formData
           })

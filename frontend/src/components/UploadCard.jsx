@@ -3,6 +3,7 @@ import { Camera, ImageUp, RefreshCw, Trash2, Upload } from 'lucide-react'
 import LoadingSpinner from './LoadingSpinner.jsx'
 import { t } from '../i18n.js'
 import { useLanguage } from '../context/LanguageContext.jsx'
+import API_BASE from '../apiConfig.js'
 
 function fileFromBlob(blob) {
   return new File([blob], 'capture.jpg', { type: 'image/jpeg' })
@@ -176,7 +177,7 @@ export default function UploadCard({ onPredicted }) {
       form.append('file', optimised)
       form.append('lang', lang)
 
-      const res = await fetch('/predict', {
+      const res = await fetch(`${API_BASE}/predict`, {
         method: 'POST',
         body: form
       })
