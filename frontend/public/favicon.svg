@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Dark green circle background -->
+  <circle cx="32" cy="32" r="32" fill="#166534"/>
+  
+  <!-- Coconut tree trunk -->
+  <path d="M32 52 C30 44 28 36 30 28" stroke="#92400e" stroke-width="4" stroke-linecap="round" fill="none"/>
+  
+  <!-- Palm fronds -->
+  <path d="M30 28 C22 20 12 22 8 18 C14 24 20 26 30 28" fill="#16a34a"/>
+  <path d="M30 28 C26 16 28 6 24 2 C24 10 26 18 30 28" fill="#16a34a"/>
+  <path d="M30 28 C38 18 46 20 50 14 C44 22 38 24 30 28" fill="#16a34a"/>
+  <path d="M30 28 C36 16 38 8 44 6 C40 14 36 22 30 28" fill="#16a34a"/>
+  <path d="M30 28 C28 20 32 12 30 6 C30 14 28 22 30 28" fill="#15803d"/>
+  
+  <!-- Coconuts -->
+  <circle cx="26" cy="30" r="5" fill="#78350f"/>
+  <circle cx="34" cy="32" r="5" fill="#92400e"/>
+  <circle cx="30" cy="38" r="5" fill="#78350f"/>
+  
+  <!-- Coconut shine highlights -->
+  <circle cx="24" cy="28" r="1.5" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="32" cy="30" r="1.5" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="28" cy="36" r="1.5" fill="rgba(255,255,255,0.3)"/>
+  
+  <!-- Ground/base suggestion -->
+  <ellipse cx="32" cy="54" rx="12" ry="3" fill="#14532d" opacity="0.6"/>
+</svg>
